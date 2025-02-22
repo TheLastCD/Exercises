@@ -25,6 +25,8 @@ typedef struct {
 
 
 
+
+
 /* Static allocation for input buffer, not thread safe and limits input len but prevents malloc related issues*/
 sInputBuffer* sNewInputBufferStatic(){
 	static sInputBuffer input_buffer;
