@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Static Max input buffersize */
 #define MAX_BUFFER_SIZE  1024
 
 
@@ -13,6 +14,36 @@
 /* Define error codes */
 #define BUFFER_EXCEEDED_ERROR -1
 #define LINE_READ_ERROR -10
+#define STATEMENT_EXEC_FAILURE -20
+
+/* Define Columns Sizes */
+#define COLUMN_USERNAME_SIZE 32
+#define COLUMN_EMAIL_SIZE 255
+
+
+
+/* Enums */
+typedef enum{
+	META_SUCCESS,
+	META_UNKNOWN
+}eMetaCommand;
+
+
+typedef enum {
+	STATE_INSERT,
+	STATE_SELECT,
+	STATE_SYNTAX_ERROR,
+	STATE_UNKNOWN
+}eStatementTypes;
+
+
+
+/* Structs */
+typedef struct{
+	uint32_t iID;
+	char cUname[COLUMN_USERNAME_SIZE];
+	char cEmail[COLUMN_EMAIL_SIZE];
+}sRow;
 
 
 
@@ -21,6 +52,12 @@ typedef struct {
 	size_t stBufferLen;
 	size_t stInputLen;
 }sInputBuffer;
+
+
+typedef struct{
+	eStatementTypes type;
+	sRow sRowInsert;
+}sStatement;
 
 
 
@@ -82,12 +119,82 @@ void vCloseInputBuffer(sInputBuffer* input_buffer){
 
 
 
+
+
+/* Command Handling */
+
+eMetaCommand McDoCommand(sInputBuffer* input_buffer){
+	if (strcmp(input_buffer->cBuffer, ".exit") == 0) {
+		//vCloseInputBuffer(input_buffer); //Comment out if using Stack or Static methods memory
+		exit(EXIT_SUCCESS);
+	}
+	else{
+		return META_UNKNOWN;
+	}
+}
+
+void vReturnStatementType(sInputBuffer* input_buffer, sStatement* statement){
+	if(strncmp(input_buffer->cBuffer, "insert", 6) == 0){
+		statement->type = STATE_INSERT;
+		int iArgs = sscanf(input_buffer->cBuffer, "insert %d %s %s", &(statement->sRowInsert.iID), statement->sRowInsert.cUname, statement->sRowInsert.cEmail);
+		if(iArgs < 3){
+			statement->type = STATE_SYNTAX_ERROR;
+		}
+	}
+
+	else if(strcmp(input_buffer->cBuffer, "select") == 0){
+		statement->type = STATE_SELECT;
+	}
+	else{
+		statement->type = STATE_UNKNOWN;
+	}
+
+}
+
+//PrepareResult prepare_statement(sInputBuffer* input_buffer, sStatement* statement) {
+//  if (strncmp(input_buffer->buffer, "insert", 6) == 0) {
+//    statement->type = STATEMENT_INSERT;
+//    return PREPARE_SUCCESS;
+//  }
+//  if (strcmp(input_buffer->buffer, "select") == 0) {
+//   statement->type = STATEMENT_SELECT;
+//    return PREPARE_SUCCESS;
+//  }
+//  return PREPARE_UNRECOGNIZED_STATEMENT;
+//}
+
+
+
+/* Executing Commands */
+
+void vExecCommand(sStatement* statement){
+	switch(statement->type){
+		case(STATE_UNKNOWN):
+			printf("Unrecognized keyword \n");
+			break;
+		case(STATE_SYNTAX_ERROR):
+			printf("Syntax Error \n");
+		case(STATE_INSERT):
+			printf("Do an Insert \n");
+			break;
+		case(STATE_SELECT):
+			printf("Do an Select \n");
+			break;
+	}
+}
+
+int iDoInsert(){
+	return STATEMENT_EXEC_FAILURE;
+}
+
+
+
+
 /*nicitie's*/
 void printprompt(){printf("db> ");}
 
 
-
-
+/* Exec Main */
 int main(int argc, char* argv[]){
 	//sInputBuffer* input_buffer = sNewInputBufferMalloc();
 	//
@@ -99,16 +206,32 @@ int main(int argc, char* argv[]){
 		if (iReturnCode == BUFFER_EXCEEDED_ERROR){
 			printf("Reading Input error: '%d'.\n",iReturnCode); //manage errors return codes
 		}
-		if (strcmp(input_buffer->cBuffer, ".exit") == 0) {
-			//vCloseInputBuffer(input_buffer);//comment out if using static or stack assigning, this is handled by program
-			exit(EXIT_SUCCESS);
-		} else {
-			printf("Unrecognized command '%s'.\n", input_buffer->cBuffer);
+		
+		/* execute any meta commands */
+		else if (input_buffer->cBuffer[0]== '.') {
+			switch (McDoCommand(input_buffer)) {
+				case(META_SUCCESS):
+					continue;
+				case(META_UNKNOWN):
+					printf("Unrecognized command '%s'\n", input_buffer->cBuffer);
+					continue;
+			}
+		} 
+		else{
+			sStatement statement;
+			vReturnStatementType(input_buffer, &statement);
+			vExecCommand(&statement);
+			//if(statement.type == STATE_UNKNOWN){
+			//	printf("retry Unrecognized keyword at start of '%s'.\n",input_buffer->cBuffer);
+			//}
+		};
+
+//		else {
+//			printf("Unrecognized command '%s'.\n", input_buffer->cBuffer);
+//		}
+
+
 		}
-
-
-	
-
-	}
 }
+
 
