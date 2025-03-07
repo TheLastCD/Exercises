@@ -1,0 +1,14 @@
+in this example we attempt to make a test binary but require test.o to execute,
+so make will look for test.o in the makefile and run that
+then it will attempt to make the final test binary now that test.o has been compiled.
+
+this is useful as we can build .o files and only need to recompile the one that changes ie:
+	src/
+		main.c
+		count.c
+		number.c
+	
+	if we compile this it will make those .o files and then compile the binary.
+	if we run again, we get the usual makefile unchanged error,
+	if we then change something in number.c on number.c is recompiled and then the final binary is ran
+	very cute

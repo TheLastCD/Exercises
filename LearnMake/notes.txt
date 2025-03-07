@@ -1,0 +1,24 @@
+MakeFile layout
+	targets: prerequisites
+		command
+		command
+		command
+
+so given:
+	hello:
+		echo "Hello, World"
+
+	hello is the target
+	there are no prerequisite
+	echo... is the command
+
+or:
+	blah: blah.c
+		gcc blah.c -o blah
+
+
+	blah is the target
+	blah.c is the prerequisite
+	gcc .. is the command
+	importantly if we run make and then run it again we will get an error as make has determined that blah.c is the same binary as the output blah
+	but if we change something in blah.c it will run as expected as they are different

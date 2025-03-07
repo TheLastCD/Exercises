@@ -1,9 +1,11 @@
 
 #include <i386/endian.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory.h>
 
 /* Static Max input buffersize */
 #define MAX_BUFFER_SIZE  1024
@@ -19,6 +21,9 @@
 /* Define Columns Sizes */
 #define COLUMN_USERNAME_SIZE 32
 #define COLUMN_EMAIL_SIZE 255
+
+
+
 
 
 
@@ -39,6 +44,8 @@ typedef enum {
 
 
 /* Structs */
+
+//define Row struct
 typedef struct{
 	uint32_t iID;
 	char cUname[COLUMN_USERNAME_SIZE];
@@ -56,9 +63,30 @@ typedef struct {
 
 typedef struct{
 	eStatementTypes type;
-	sRow sRowInsert;
+	sRow sRowInsert; // only applicable to isert function
 }sStatement;
 
+
+/* Define Row sizes and Offsets */
+/* Row breakdown (from original Tutorial):
+ *	Column	size	offset
+ *
+ *	iID	4	0
+ *	cUname	32	4
+ *	cEmail	255	36
+ *	total	291
+ *
+ * Each Row consumes 291 Bytes  
+ * */
+
+#define size_of_attribute(Struct, Attribute) sizeof(((Struct*)0)->Attribute)
+const uint32_t ID_SIZE = size_of_attribute(sRow, iID);
+const uint32_t USERNAME_SIZE = size_of_attribute(sRow, cUname);
+const uint32_t EMAIL_SIZE = size_of_attribute(sRow, cEmail);
+const uint32_t ID_OFFSET = 0;
+const uint32_t USERNAME_OFFSET = ID_OFFSET + ID_SIZE;
+const uint32_t EMAIL_OFFSET = USERNAME_OFFSET + USERNAME_SIZE;
+const uint32_t ROW_SIZE = ID_SIZE + USERNAME_SIZE + EMAIL_SIZE;
 
 
 
@@ -76,7 +104,7 @@ sInputBuffer* sNewInputBufferStatic(){
 	return &input_buffer;
 }
 
-/* Stack Allocation, define the fixed size within the stuct and return by value instead of pointer*/
+/* Stack Allocation, define the fixed size within the stuct and return by value instead of pointer as memory is free'd after lifecycle*/
 sInputBuffer sNewInputBufferStack(){
 	sInputBuffer input_buffer= {
 		.stBufferLen = MAX_BUFFER_SIZE,
@@ -187,8 +215,31 @@ int iDoInsert(){
 	return STATEMENT_EXEC_FAILURE;
 }
 
+/* Row de/Serialise logic */
+/* In C11 or higher can us memcpy_s but as im compiling on Mac OS the headaches of getting that working is not worth it for a small change in a example*/
+void vSerialiseRow(sRow* vSource, void* destination) {
+	memcpy(destination + ID_OFFSET, &(vSource->iID), ID_SIZE);
+	memcpy(destination + USERNAME_OFFSET, &(vSource->cUname), USERNAME_SIZE);
+	memcpy(destination + EMAIL_OFFSET, &(vSource->cEmail), EMAIL_SIZE);
+}
 
+void vDeserialiseRow(void* vSource, sRow* destination) {
+	memcpy(&(destination->iID), vSource + ID_OFFSET, ID_SIZE);
+	memcpy(&(destination->cUname), vSource + USERNAME_OFFSET, USERNAME_SIZE);
+	memcpy(&(destination->cEmail), vSource + EMAIL_OFFSET, EMAIL_SIZE);
+}
 
+/* implementation using memmove, better tham memcpy as it solves memory overlapping issues, however it is slower and overlapping is probably not a concern here */
+void vSerialiseRowMM(sRow* vSource, void* destination) {
+	memmove(destination + ID_OFFSET, &(vSource->iID), ID_SIZE);
+	memmove(destination + USERNAME_OFFSET, &(vSource->cUname), USERNAME_SIZE);
+	memmove(destination + EMAIL_OFFSET, &(vSource->cEmail), EMAIL_SIZE);
+}
+void vDeserialiseRowMM(void* vSource, sRow* destination) {
+	memmove(&(destination->iID), vSource + ID_OFFSET, ID_SIZE);
+	memmove(&(destination->cUname), vSource + USERNAME_OFFSET, USERNAME_SIZE);
+	memmove(&(destination->cEmail), vSource + EMAIL_OFFSET, EMAIL_SIZE);
+}
 
 /*nicitie's*/
 void printprompt(){printf("db> ");}
