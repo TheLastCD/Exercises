@@ -1,3 +1,7 @@
+sources:
+	https://makefiletutorial.com/
+
+
 MakeFile layout
 	targets: prerequisites
 		command
