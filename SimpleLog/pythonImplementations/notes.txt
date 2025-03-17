@@ -1,0 +1,6 @@
+log.py:
+	Simple log with filtering
+	uses 2 classes:
+		one used for enums and holding the heirachy of logging
+		the second implements the logging
+	
