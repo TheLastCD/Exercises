@@ -1,5 +1,6 @@
 Companion to a smallest possible distro configuration:
 	https://www.youtube.com/watch?v=u2Juz5sQyYQ
+	i've expanded the userspace implemenation to be more secure and useful
 
 
 initial compilation of c and asm code commands:
