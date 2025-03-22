@@ -1,0 +1,6 @@
+inital source is:
+	https://medium.com/@TheLittleNaruto/writing-hello-world-driver-for-the-linux-kernel-d591a2fa214b
+
+WSL Limitations:
+	Linux Headers are not really installable on WSL it seems so this should in theory work when booted into a docker container/ vm etc.
+	Test Soon Please Future Me :)

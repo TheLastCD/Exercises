@@ -59,11 +59,12 @@ int main(){
 	for (;;){
 		int iWrittenBytes = write(1, "> ", 2);
 		int iSuccess = iHandleInput(inputBuffer);
+		char *argv[] = {"/bin/ls", "-l", NULL};
 		if(iSuccess == 0){
 			//fork the command run
 			pid_t fork_result = fork();
 			if (fork_result == 0){
-				execve(inputBuffer->cCommand,0, envp);
+				execve(inputBuffer->cCommand,argv, envp);
 				break; //stop the child from becoming the shell
 			}
 			else{
