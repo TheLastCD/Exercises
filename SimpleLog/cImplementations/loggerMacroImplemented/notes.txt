@@ -1,0 +1,11 @@
+This is a implementation of the macro function into something that can be used in an actual program
+in the header file we declared the macro and the .c file we declare it and allow it to be accessed
+finally we include the header in the main.c and share the obj
+
+compile steps
+
+	first compile the macro into an object file:
+		gcc -c logMacro.c -o logger.o
+
+	then compile main with it and reference the header:
+		gcc main.c logger.o -o myprogram

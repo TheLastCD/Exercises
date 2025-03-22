@@ -1,0 +1,14 @@
+Make automation is referred to as implicit rules
+
+implicit rule variables:
+	CC	c compiler	default cc
+	CXX	c++ compiler	default G++
+
+	Flags for the above compilers are designated using:
+		CFLAGS given to CC
+		CXXFLAGS given CXX
+		CPPFLAGS is given to the C preprocessor (includes)
+		LDDFLAGS given to compilers when they are supposed to invoke the linker
+
+
+
